@@ -28,6 +28,7 @@ export interface DecisionTreeState {
 
 export type DecisionTreeAction =
   | { type: 'SELECT_OPTION'; step: StepType; value: string; label: string }
+  | { type: 'BATCH_SELECT_OPTIONS'; selections: Array<{ step: StepType; value: string; label: string }> }
   | { type: 'GO_BACK_TO_STEP'; step: StepType }
   | { type: 'RESET' }
   | { type: 'GENERATE_PROMPT'; prompt: string }
@@ -68,6 +69,33 @@ export function decisionTreeReducer(
       }
 
       const nextStep = getNextStep(action.step, newSelections);
+
+      return {
+        ...state,
+        selections: newSelections,
+        currentStep: nextStep,
+        generatedPrompt: null,
+      };
+    }
+
+    case 'BATCH_SELECT_OPTIONS': {
+      // Aplicar todas as seleções de uma vez (para NLP)
+      const newSelections: StepSelection[] = [...state.selections];
+      
+      action.selections.forEach(({ step, value, label }) => {
+        const existingIndex = newSelections.findIndex((s) => s.step === step);
+        const newSelection: StepSelection = { step, value, label };
+        
+        if (existingIndex !== -1) {
+          newSelections[existingIndex] = newSelection;
+        } else {
+          newSelections.push(newSelection);
+        }
+      });
+
+      // Encontrar o próximo step não preenchido
+      const lastSelection = action.selections[action.selections.length - 1];
+      const nextStep = lastSelection ? getNextStep(lastSelection.step, newSelections) : state.currentStep;
 
       return {
         ...state,

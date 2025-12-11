@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 Question Generator - Frontend
 
-## Getting Started
+Interface web para gerar prompts de questões educacionais alinhadas com a BNCC, com suporte a **Processamento de Linguagem Natural (NLP)**.
 
-First, run the development server:
+> **Nota:** Este é o frontend do projeto. Para instruções completas de instalação e execução do sistema completo, veja o [README principal](../README.md).
+
+## ✨ Funcionalidades
+
+- 🤖 **NLP Inteligente**: Digite em linguagem natural e a IA preenche os campos automaticamente
+- 🌳 **Árvore de Decisão**: Interface guiada para seleção manual de opções
+- 📚 **Alinhado com BNCC**: Baseado na Base Nacional Comum Curricular
+- 🎯 **Taxonomia de Bloom**: Níveis cognitivos de dificuldade
+- 📝 **Múltiplos Formatos**: Múltipla escolha, dissertativa, verdadeiro/falso, etc.
+- 🎨 **Interface Moderna**: Design responsivo e acessível
+
+## 🚀 Instalação
+
+```bash
+npm install
+```
+
+## 🏃 Executar
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse: `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> **Importante:** A API NLP deve estar rodando em `http://localhost:8000` para o processamento de linguagem natural funcionar.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Estrutura
 
-## Learn More
+```
+.
+├── app/                    # Páginas Next.js
+│   ├── page.tsx           # Página principal
+│   └── layout.tsx         # Layout global
+├── components/             # Componentes React
+│   ├── NLPInput.tsx       # Input com NLP
+│   ├── DecisionTreeContainer.tsx  # Container principal
+│   ├── StepNode.tsx       # Nó da árvore de decisão
+│   ├── SummaryPanel.tsx   # Painel de resumo
+│   └── PromptDisplay.tsx  # Display do prompt gerado
+├── lib/
+│   ├── services/          # Serviços
+│   │   ├── NLPService.ts  # Cliente da API NLP
+│   │   ├── DataService.ts # Serviço de dados BNCC
+│   │   └── PromptTemplateService.ts
+│   ├── types/             # TypeScript types
+│   ├── data/              # Dados BNCC
+│   └── utils/             # Utilitários
+└── public/                # Arquivos estáticos
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠️ Tecnologias
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Next.js 16** - Framework React
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Estilização
+- **Framer Motion** - Animações
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📜 Scripts Disponíveis
 
-## Deploy on Vercel
+```bash
+npm run dev          # Inicia servidor de desenvolvimento
+npm run build        # Build para produção
+npm run start        # Inicia servidor de produção
+npm run lint         # Executa linter
+npm run convert-csv  # Converte CSV da BNCC para JSON
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🔗 Integração com API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O frontend se comunica com a API NLP através do serviço `NLPService.ts`:
+
+```typescript
+// Exemplo de uso
+const result = await nlpService.extractFromText(
+  "Questão de matemática sobre frações para o 7º ano"
+);
+```
+
+A API deve estar rodando em `http://localhost:8000` (configurável).

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "convert-csv": "node scripts/convert-csv-to-json.js"
+    "convert-csv": "node scripts/convert-csv-to-json.js",
+    "check-deploy": "node check_deploy.js"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

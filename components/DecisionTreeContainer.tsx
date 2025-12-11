@@ -4,6 +4,7 @@ import { useReducer, useRef, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { DataService } from '@/lib/services/DataService';
 import { PromptTemplateService } from '@/lib/services/PromptTemplateService';
+import { nlpService, type NLPExtractionResult } from '@/lib/services/NLPService';
 import {
   decisionTreeReducer,
   initialState,
@@ -13,6 +14,7 @@ import {
 import { ProgressIndicator } from './ProgressIndicator';
 import { StepNode } from './StepNode';
 import SummaryPanel from './SummaryPanel';
+import { NLPInput } from './NLPInput';
 import { getStepLabel, STEP_ORDER } from '@/lib/utils/stepFlow';
 import {
   NIVEIS_BLOOM,
@@ -37,6 +39,9 @@ const PromptDisplay = dynamic(() => import('./PromptDisplay'), {
 export function DecisionTreeContainer() {
   const [state, dispatch] = useReducer(decisionTreeReducer, initialState);
   const [initError, setInitError] = useState<string | null>(null);
+  const [nlpLoading, setNlpLoading] = useState(false);
+  const [nlpResult, setNlpResult] = useState<NLPExtractionResult | null>(null);
+  const [showNLPInput, setShowNLPInput] = useState(true);
   const [dataService] = useState<DataService | null>(() => {
     try {
       return new DataService();
@@ -201,6 +206,7 @@ export function DecisionTreeContainer() {
       stepNumber: number;
     }> = [];
 
+    // Adicionar todos os steps já selecionados
     state.selections.forEach((selection, index) => {
       steps.push({
         step: selection.step,
@@ -210,20 +216,32 @@ export function DecisionTreeContainer() {
       });
     });
 
-    if (
-      state.currentStep &&
-      !state.selections.find((s) => s.step === state.currentStep)
-    ) {
-      const shouldSkip = shouldSkipStep(state.currentStep);
-      
-      if (!shouldSkip) {
-        steps.push({
-          step: state.currentStep,
-          selection: undefined,
-          isActive: true,
-          stepNumber: state.selections.length + 1,
-        });
+    // Encontrar o próximo step que precisa ser preenchido
+    let nextStepToShow: StepType | null = null;
+    
+    if (state.currentStep && !state.selections.find((s) => s.step === state.currentStep)) {
+      nextStepToShow = state.currentStep;
+    } else {
+      // Se currentStep é null ou já foi preenchido, encontrar o primeiro step não preenchido
+      for (const step of STEP_ORDER) {
+        const isSelected = state.selections.some((s) => s.step === step);
+        const shouldSkip = shouldSkipStep(step);
+        
+        if (!isSelected && !shouldSkip) {
+          nextStepToShow = step;
+          break;
+        }
       }
+    }
+
+    // Adicionar o próximo step a ser preenchido
+    if (nextStepToShow && !shouldSkipStep(nextStepToShow)) {
+      steps.push({
+        step: nextStepToShow,
+        selection: undefined,
+        isActive: true,
+        stepNumber: state.selections.length + 1,
+      });
     }
 
     return steps;
@@ -306,12 +324,70 @@ export function DecisionTreeContainer() {
 
     if (confirmed) {
       dispatch({ type: 'RESET' });
+      setNlpResult(null);
+      setShowNLPInput(true);
       
       setTimeout(() => {
         scrollToTop();
       }, 100);
     }
   }, [dispatch, scrollToTop]);
+
+  const handleNLPExtract = useCallback(async (data: NLPExtractionResult) => {
+    setNlpLoading(true);
+    setNlpResult(data);
+
+    try {
+      // Auto-preencher campos com confiança >= 0.5
+      const { extracted, confidence } = data;
+      const CONFIDENCE_THRESHOLD = 0.5;
+
+      // Coletar todas as seleções que serão feitas
+      const selectionsToMake: Array<{ step: StepType; value: string; label: string }> = [];
+
+      // Mapear TODOS os campos extraídos para seleções (na ordem correta do STEP_ORDER)
+      const fieldMapping: Array<{ field: keyof typeof extracted; step: StepType }> = [
+        { field: 'disciplina', step: 'disciplina' },
+        { field: 'ano', step: 'ano' },
+        { field: 'perfilAluno', step: 'perfilAluno' },
+        { field: 'unidadeTematica', step: 'unidadeTematica' },
+        { field: 'objetoConhecimento', step: 'objetoConhecimento' },
+        { field: 'habilidade', step: 'habilidade' },
+        { field: 'nivelBloom', step: 'nivelBloom' },
+        { field: 'tipoQuestao', step: 'tipoQuestao' },
+        { field: 'tipoTextoBase', step: 'tipoTextoBase' },
+      ];
+
+      // Coletar todas as seleções válidas
+      fieldMapping.forEach(({ field, step }) => {
+        const value = extracted[field];
+        const conf = confidence[field];
+        
+        if (value && conf && conf >= CONFIDENCE_THRESHOLD) {
+          console.log(`✅ Adicionando ${field}: "${value}" (confiança: ${conf.toFixed(2)})`);
+          selectionsToMake.push({ step, value, label: value });
+        } else {
+          console.log(`⏭️  Pulando ${field}: ${!value ? 'sem valor' : `confiança baixa (${conf?.toFixed(2)})`}`);
+        }
+      });
+
+      // Aplicar TODAS as seleções de uma vez usando batch action
+      if (selectionsToMake.length > 0) {
+        console.log(`\n📦 Aplicando ${selectionsToMake.length} seleções em batch...`);
+        dispatch({
+          type: 'BATCH_SELECT_OPTIONS',
+          selections: selectionsToMake,
+        });
+      }
+
+      setShowNLPInput(false);
+      setTimeout(() => scrollToNewStep(), 200);
+    } catch (error) {
+      console.error('Error processing NLP result:', error);
+    } finally {
+      setNlpLoading(false);
+    }
+  }, [dispatch, scrollToNewStep]);
 
   const areAllSelectionsComplete = useMemo((): boolean => {
     const requiredSteps: StepType[] = [
@@ -465,6 +541,27 @@ export function DecisionTreeContainer() {
       )}
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {showNLPInput && state.selections.length === 0 && !showPrompt && (
+          <NLPInput onExtract={handleNLPExtract} isLoading={nlpLoading} />
+        )}
+
+        {nlpResult && !showPrompt && state.selections.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg"
+          >
+            <p className="text-sm text-green-800">
+              <strong>✅ IA processou seu texto!</strong> Campos preenchidos automaticamente. Continue selecionando os campos restantes abaixo.
+            </p>
+            {nlpResult.missing_fields.length > 0 && (
+              <p className="text-xs text-green-700 mt-2">
+                Campos que precisam de atenção: {nlpResult.missing_fields.join(', ')}
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {state.selections.length > 0 && !showPrompt && (
           <div className="mb-6 flex justify-end">
             <button
