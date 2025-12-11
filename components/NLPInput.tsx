@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { nlpService } from '@/lib/services/NLPService';
 
 interface NLPInputProps {
   onExtract: (extractedData: any) => void;
@@ -22,19 +23,8 @@ export function NLPInput({ onExtract, isLoading = false }: NLPInputProps) {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/extract', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro ao processar texto');
-      }
-
-      const data = await response.json();
+      // Usar o NLPService ao invés de fetch direto
+      const data = await nlpService.extractInformation(text);
       onExtract(data);
     } catch (err) {
       console.error('Erro:', err);
