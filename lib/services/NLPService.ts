@@ -2,7 +2,7 @@
  * Service for interacting with the Python NLP API
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_NLP_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_NLP_API_URL || 'https://web-production-a55a7.up.railway.app';
 
 export interface NLPExtractionResult {
   extracted: {
