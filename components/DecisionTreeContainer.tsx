@@ -36,7 +36,7 @@ const PromptDisplay = dynamic(() => import('./PromptDisplay'), {
   ssr: false,
 });
 
-export function DecisionTreeContainer() {
+export function DecisionTreeContainer({ method = 'keywords' }: { method?: 'keywords' | 'embeddings' | 'hybrid' }) {
   const [state, dispatch] = useReducer(decisionTreeReducer, initialState);
   const [initError, setInitError] = useState<string | null>(null);
   const [nlpLoading, setNlpLoading] = useState(false);
@@ -542,7 +542,7 @@ export function DecisionTreeContainer() {
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         {showNLPInput && state.selections.length === 0 && !showPrompt && (
-          <NLPInput onExtract={handleNLPExtract} isLoading={nlpLoading} />
+          <NLPInput onExtract={handleNLPExtract} isLoading={nlpLoading} method={method} />
         )}
 
         {nlpResult && !showPrompt && state.selections.length > 0 && (

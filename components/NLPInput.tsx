@@ -7,9 +7,10 @@ import { nlpService } from '@/lib/services/NLPService';
 interface NLPInputProps {
   onExtract: (extractedData: any) => void;
   isLoading?: boolean;
+  method?: 'keywords' | 'embeddings' | 'hybrid';
 }
 
-export function NLPInput({ onExtract, isLoading = false }: NLPInputProps) {
+export function NLPInput({ onExtract, isLoading = false, method = 'keywords' }: NLPInputProps) {
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +25,7 @@ export function NLPInput({ onExtract, isLoading = false }: NLPInputProps) {
 
     try {
       // Usar o NLPService ao invés de fetch direto
-      const data = await nlpService.extractInformation(text);
+      const data = await nlpService.extractInformation(text, method);
       onExtract(data);
     } catch (err) {
       console.error('Erro:', err);

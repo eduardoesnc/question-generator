@@ -64,22 +64,28 @@ export class NLPService {
    */
   async extractInformation(
     text: string,
+    method: 'keywords' | 'embeddings' | 'hybrid' = 'keywords',
     context?: Record<string, any>
   ): Promise<NLPExtractionResult> {
     try {
+      const body: any = { text, method };
+      if (context) {
+        body.context = context;
+      }
+      
       const response = await fetch(`${this.baseUrl}/api/extract`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, context }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || `API error: ${response.status} ${response.statusText}`
-        );
+        const errorMessage = errorData.detail || `API error: ${response.status} ${response.statusText}`;
+        console.error('API Error:', errorMessage, errorData);
+        throw new Error(errorMessage);
       }
 
       const data: NLPExtractionResult = await response.json();
