@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { NLPResult } from '@/lib/types/nlp';
+import { NLPExtractionResult } from '@/lib/types/nlp';
 import { nlpService } from '@/lib/services/NLPService';
+import Link from 'next/link';
 
 export default function ComparePage() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<{
-    keywords?: NLPResult;
-    embeddings?: NLPResult;
-    hybrid?: NLPResult;
+    keywords?: NLPExtractionResult;
+    embeddings?: NLPExtractionResult;
+    hybrid?: NLPExtractionResult;
   }>({});
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export default function ComparePage() {
     }
   };
 
-  const renderResult = (method: string, result?: NLPResult) => {
+  const renderResult = (method: string, result?: NLPExtractionResult) => {
     if (!result) return null;
 
     return (
@@ -82,8 +83,18 @@ export default function ComparePage() {
   };
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 bg-[#F9FAFB]">
       <div className="max-w-7xl mx-auto">
+        {/* Botão Voltar */}
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-orange-500 transition-colors"
+          >
+            ← Voltar para página principal
+          </Link>
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Comparação de Métodos</h1>
           <p className="text-gray-600">

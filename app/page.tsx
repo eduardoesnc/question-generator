@@ -55,14 +55,14 @@ export default function Home() {
             
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs sm:text-sm text-blue-800">
-                <strong>💡 Dica:</strong> Selecione cada opção com cuidado. Você pode editar suas escolhas anteriores a qualquer momento clicando em &ldquo;Editar&rdquo;.
+                <strong>💡 Dica:</strong> Selecione cada opção com cuidado. Você pode editar suas escolhas anteriores a qualquer momento clicando em &ldquo;Editar&rdquo;. Para usar extração automática com IA, acesse as páginas Keywords, Embeddings ou Hybrid acima.
               </p>
             </div>
           </div>
         </header>
 
         <main id="main-content" role="main">
-          <DecisionTreeContainer />
+          <DecisionTreeContainer showNLPInput={false} />
         </main>
       </div>
     </ErrorBoundary>
