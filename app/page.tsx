@@ -28,22 +28,16 @@ export default function Home() {
             {/* Navigation to different methods */}
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="/keywords"
-                className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
-              >
-                📝 Keywords
-              </Link>
-              <Link
                 href="/embeddings"
                 className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium"
               >
                 🧠 Embeddings
               </Link>
               <Link
-                href="/hybrid"
-                className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
+                href="/llm"
+                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium"
               >
-                ⚡ Hybrid
+                ✨ Modo LLM (Gemini)
               </Link>
               <Link
                 href="/compare"
